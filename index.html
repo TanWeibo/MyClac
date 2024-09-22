@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高级计算器</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="calculator">
+            <input type="text" id="display" readonly>
+            <br>
+            <button onclick="clearEntry()">C</button>
+            <button onclick="clearDisplay()">CE</button>
+            <button onclick="mathFunction('sqrt')">√</button>
+            <button onclick="mathFunction('pow')">x²</button>
+            <button onclick="mathFunction('sin')">sin</button>
+            <br>
+            <button onclick="appendToDisplay('7')">7</button>
+            <button onclick="appendToDisplay('8')">8</button>
+            <button onclick="appendToDisplay('9')">9</button>
+            <button onclick="appendToDisplay('/')">/</button>
+            <button onclick="mathFunction('cos')">cos</button>
+            <br>
+            <button onclick="appendToDisplay('4')">4</button>
+            <button onclick="appendToDisplay('5')">5</button>
+            <button onclick="appendToDisplay('6')">6</button>
+            <button onclick="appendToDisplay('*')">*</button>
+            <button onclick="appendToDisplay('(')">(</button>
+            <br>
+            <button onclick="appendToDisplay('1')">1</button>
+            <button onclick="appendToDisplay('2')">2</button>
+            <button onclick="appendToDisplay('3')">3</button>
+            <button onclick="appendToDisplay('-')">-</button>
+            <button onclick="appendToDisplay(')')">)</button>
+            <br>
+            <button onclick="appendToDisplay('0')">0</button>
+            <button onclick="appendToDisplay('.')">.</button>
+            <button onclick="calculate()">=</button>
+            <button onclick="appendToDisplay('+')">+</button>
+            <button onclick="backspace()">←</button>
+            <br>
+            <button onclick="appendAns()">Ans</button>
+        </div>
+        <div class="history-container">
+            <h3>计算历史</h3>
+            <div id="history"></div>
+            <button onclick="clearHistory()" class="clear-history">清除历史记录</button>
+        </div>
+    </div>
+
+    <script>
+        let history = [];
+        let lastAnswer = null;
+        let display = document.getElementById('display');
+
+        function appendToDisplay(value) {
+            display.value += value;
+        }
+
+        function clearDisplay() {
+            display.value = '';
+        }
+
+        function clearEntry() {
+            display.value = '';
+        }
+
+        function backspace() {
+            display.value = display.value.slice(0, -1);
+        }
+
+        function mathFunction(func) {
+            let value = parseFloat(display.value);
+            switch(func) {
+                case 'sqrt':
+                    display.value = Math.sqrt(value);
+                    break;
+                case 'pow':
+                    display.value = Math.pow(value, 2);
+                    break;
+                case 'sin':
+                    display.value = Math.sin(value);
+                    break;
+                case 'cos':
+                    display.value = Math.cos(value);
+                    break;
+            }
+            lastAnswer = parseFloat(display.value);
+            addToHistory(`${func}(${value}) = ${display.value}`);
+        }
+
+        function calculate() {
+            try {
+                let expression = display.value.replace(/Ans/g, lastAnswer !== null ? lastAnswer : '0');
+                let result = eval(expression);
+                addToHistory(`${display.value} = ${result}`);
+                display.value = result;
+                lastAnswer = result;
+            } catch (error) {
+                display.value = '错误';
+            }
+        }
+
+        function addToHistory(entry) {
+            history.push(entry);
+            updateHistoryDisplay();
+        }
+
+        function updateHistoryDisplay() {
+            let historyElement = document.getElementById('history');
+            historyElement.innerHTML = history.slice(-5).map(entry => `<p>${entry}</p>`).join('');
+        }
+
+        function clearHistory() {
+            history = [];
+            updateHistoryDisplay();
+        }
+
+        function appendAns() {
+            appendToDisplay('Ans');
+        }
+
+        // 键盘支持
+        document.addEventListener('keydown', function(event) {
+            const key = event.key;
+            if (/[0-9+\-*/.=()√]/.test(key)) {
+                event.preventDefault();
+                if (key === '=') {
+                    calculate();
+                } else if (key === '√') {
+                    mathFunction('sqrt');
+                } else {
+                    appendToDisplay(key);
+                }
+            } else if (key === 'Enter') {
+                event.preventDefault();
+                calculate();
+            } else if (key === 'Backspace') {
+                event.preventDefault();
+                backspace();
+            } else if (key === 'Delete') {
+                event.preventDefault();
+                clearEntry();
+            } else if (key === 'Escape') {
+                event.preventDefault();
+                clearDisplay();
+            } else if (key === '^') {
+                event.preventDefault();
+                mathFunction('pow');
+            } else if (key.toLowerCase() === 's') {
+                event.preventDefault();
+                mathFunction('sin');
+            } else if (key.toLowerCase() === 'c') {
+                event.preventDefault();
+                mathFunction('cos');
+            } else if (key.toLowerCase() === 'a') {
+                event.preventDefault();
+                appendAns();
+            }
+        });
+    </script>
+</body>
+</html>
